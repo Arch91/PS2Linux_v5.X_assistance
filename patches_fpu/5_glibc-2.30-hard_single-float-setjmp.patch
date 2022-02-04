@@ -1,0 +1,212 @@
+diff -Naur glibc-2.30/sysdeps/mips/__longjmp.c glibc-2.30-sfsetjmp/sysdeps/mips/__longjmp.c
+--- glibc-2.30/sysdeps/mips/__longjmp.c	2019-08-01 07:29:31.000000000 +0300
++++ glibc-2.30-sfsetjmp/sysdeps/mips/__longjmp.c	2022-02-04 15:16:33.796700000 +0300
+@@ -39,12 +39,24 @@
+ 
+ #ifdef __mips_hard_float
+   /* Pull back the floating point callee-saved registers.  */
+-  asm volatile ("l.d $f20, %0" : : "m" (env[0].__fpregs[0]));
++/*  asm volatile ("l.d $f20, %0" : : "m" (env[0].__fpregs[0]));
+   asm volatile ("l.d $f22, %0" : : "m" (env[0].__fpregs[1]));
+   asm volatile ("l.d $f24, %0" : : "m" (env[0].__fpregs[2]));
+   asm volatile ("l.d $f26, %0" : : "m" (env[0].__fpregs[3]));
+   asm volatile ("l.d $f28, %0" : : "m" (env[0].__fpregs[4]));
+-  asm volatile ("l.d $f30, %0" : : "m" (env[0].__fpregs[5]));
++  asm volatile ("l.d $f30, %0" : : "m" (env[0].__fpregs[5]));*/
++  asm volatile ("lwc1 $f20, %0" : : "m" (env[0].__fpregs[0]));
++  asm volatile ("lwc1 $f21, %0" : : "m" (env[0].__fpregs[1]));
++  asm volatile ("lwc1 $f22, %0" : : "m" (env[0].__fpregs[2]));
++  asm volatile ("lwc1 $f23, %0" : : "m" (env[0].__fpregs[3]));
++  asm volatile ("lwc1 $f24, %0" : : "m" (env[0].__fpregs[4]));
++  asm volatile ("lwc1 $f25, %0" : : "m" (env[0].__fpregs[5]));
++  asm volatile ("lwc1 $f26, %0" : : "m" (env[0].__fpregs[6]));
++  asm volatile ("lwc1 $f27, %0" : : "m" (env[0].__fpregs[7]));
++  asm volatile ("lwc1 $f28, %0" : : "m" (env[0].__fpregs[8]));
++  asm volatile ("lwc1 $f29, %0" : : "m" (env[0].__fpregs[9]));
++  asm volatile ("lwc1 $f30, %0" : : "m" (env[0].__fpregs[10]));
++  asm volatile ("lwc1 $f31, %0" : : "m" (env[0].__fpregs[11]));
+ #endif
+ 
+   /* Get the GP. */
+diff -Naur glibc-2.30/sysdeps/mips/bits/setjmp.h glibc-2.30-sfsetjmp/sysdeps/mips/bits/setjmp.h
+--- glibc-2.30/sysdeps/mips/bits/setjmp.h	2019-08-01 07:29:31.000000000 +0300
++++ glibc-2.30-sfsetjmp/sysdeps/mips/bits/setjmp.h	2022-02-04 15:14:54.842560000 +0300
+@@ -66,7 +66,8 @@
+ #if _MIPS_SIM == _ABI64
+     double __fpregs[8];
+ #else
+-    double __fpregs[6];
++//    double __fpregs[6];
++    float __fpregs[12];
+ #endif
+   } __jmp_buf[1];
+ 
+diff -Naur glibc-2.30/sysdeps/mips/setjmp_aux.c glibc-2.30-sfsetjmp/sysdeps/mips/setjmp_aux.c
+--- glibc-2.30/sysdeps/mips/setjmp_aux.c	2019-08-01 07:29:31.000000000 +0300
++++ glibc-2.30-sfsetjmp/sysdeps/mips/setjmp_aux.c	2022-02-04 15:17:42.722101000 +0300
+@@ -33,12 +33,24 @@
+ {
+ #ifdef __mips_hard_float
+   /* Store the floating point callee-saved registers...  */
+-  asm volatile ("s.d $f20, %0" : : "m" (env[0].__jmpbuf[0].__fpregs[0]));
++/*  asm volatile ("s.d $f20, %0" : : "m" (env[0].__jmpbuf[0].__fpregs[0]));
+   asm volatile ("s.d $f22, %0" : : "m" (env[0].__jmpbuf[0].__fpregs[1]));
+   asm volatile ("s.d $f24, %0" : : "m" (env[0].__jmpbuf[0].__fpregs[2]));
+   asm volatile ("s.d $f26, %0" : : "m" (env[0].__jmpbuf[0].__fpregs[3]));
+   asm volatile ("s.d $f28, %0" : : "m" (env[0].__jmpbuf[0].__fpregs[4]));
+-  asm volatile ("s.d $f30, %0" : : "m" (env[0].__jmpbuf[0].__fpregs[5]));
++  asm volatile ("s.d $f30, %0" : : "m" (env[0].__jmpbuf[0].__fpregs[5]));*/
++  asm volatile ("swc1 $f20, %0" : : "m" (env[0].__jmpbuf[0].__fpregs[0]));
++  asm volatile ("swc1 $f21, %0" : : "m" (env[0].__jmpbuf[0].__fpregs[1]));
++  asm volatile ("swc1 $f22, %0" : : "m" (env[0].__jmpbuf[0].__fpregs[2]));
++  asm volatile ("swc1 $f23, %0" : : "m" (env[0].__jmpbuf[0].__fpregs[3]));
++  asm volatile ("swc1 $f24, %0" : : "m" (env[0].__jmpbuf[0].__fpregs[4]));
++  asm volatile ("swc1 $f25, %0" : : "m" (env[0].__jmpbuf[0].__fpregs[5]));
++  asm volatile ("swc1 $f26, %0" : : "m" (env[0].__jmpbuf[0].__fpregs[6]));
++  asm volatile ("swc1 $f27, %0" : : "m" (env[0].__jmpbuf[0].__fpregs[7]));
++  asm volatile ("swc1 $f28, %0" : : "m" (env[0].__jmpbuf[0].__fpregs[8]));
++  asm volatile ("swc1 $f29, %0" : : "m" (env[0].__jmpbuf[0].__fpregs[9]));
++  asm volatile ("swc1 $f30, %0" : : "m" (env[0].__jmpbuf[0].__fpregs[10]));
++  asm volatile ("swc1 $f31, %0" : : "m" (env[0].__jmpbuf[0].__fpregs[11]));
+ #endif
+ 
+   /* .. and the PC;  */
+diff -Naur glibc-2.30/sysdeps/unix/sysv/linux/mips/getcontext.S glibc-2.30-sfsetjmp/sysdeps/unix/sysv/linux/mips/getcontext.S
+--- glibc-2.30/sysdeps/unix/sysv/linux/mips/getcontext.S	2019-08-01 07:29:31.000000000 +0300
++++ glibc-2.30-sfsetjmp/sysdeps/unix/sysv/linux/mips/getcontext.S	2022-02-04 14:40:54.997288000 +0300
+@@ -106,12 +106,24 @@
+ 	s.d	fs7, (31 * SZREG + MCONTEXT_FPREGS)(a0)
+ 
+ # else  /* _MIPS_SIM != _ABI64 */
+-	s.d	fs0, (20 * SZREG + MCONTEXT_FPREGS)(a0)
++/*	s.d	fs0, (20 * SZREG + MCONTEXT_FPREGS)(a0)
+ 	s.d	fs1, (22 * SZREG + MCONTEXT_FPREGS)(a0)
+ 	s.d	fs2, (24 * SZREG + MCONTEXT_FPREGS)(a0)
+ 	s.d	fs3, (26 * SZREG + MCONTEXT_FPREGS)(a0)
+ 	s.d	fs4, (28 * SZREG + MCONTEXT_FPREGS)(a0)
+-	s.d	fs5, (30 * SZREG + MCONTEXT_FPREGS)(a0)
++	s.d	fs5, (30 * SZREG + MCONTEXT_FPREGS)(a0)*/
++	swc1	fs0, (20 * SZREG + MCONTEXT_FPREGS)(a0)
++	swc1	fs0f, (21 * SZREG + MCONTEXT_FPREGS)(a0)
++	swc1	fs1, (22 * SZREG + MCONTEXT_FPREGS)(a0)
++	swc1	fs1f, (23 * SZREG + MCONTEXT_FPREGS)(a0)
++	swc1	fs2, (24 * SZREG + MCONTEXT_FPREGS)(a0)
++	swc1	fs2f, (25 * SZREG + MCONTEXT_FPREGS)(a0)
++	swc1	fs3, (26 * SZREG + MCONTEXT_FPREGS)(a0)
++	swc1	fs3f, (27 * SZREG + MCONTEXT_FPREGS)(a0)
++	swc1	fs4, (28 * SZREG + MCONTEXT_FPREGS)(a0)
++	swc1	fs4f, (29 * SZREG + MCONTEXT_FPREGS)(a0)
++	swc1	fs5, (30 * SZREG + MCONTEXT_FPREGS)(a0)
++	swc1	fs5f, (31 * SZREG + MCONTEXT_FPREGS)(a0)
+ 
+ # endif /* _MIPS_SIM != _ABI64 */
+ 
+diff -Naur glibc-2.30/sysdeps/unix/sysv/linux/mips/mips32/jmp_buf-macros.h glibc-2.30-sfsetjmp/sysdeps/unix/sysv/linux/mips/mips32/jmp_buf-macros.h
+--- glibc-2.30/sysdeps/unix/sysv/linux/mips/mips32/jmp_buf-macros.h	2019-08-01 07:29:31.000000000 +0300
++++ glibc-2.30-sfsetjmp/sysdeps/unix/sysv/linux/mips/mips32/jmp_buf-macros.h	2022-02-04 16:59:56.846789501 +0300
+@@ -1,6 +1,12 @@
+-#define JMP_BUF_SIZE 240
+-#define SIGJMP_BUF_SIZE 240
+-#define JMP_BUF_ALIGN 8
+-#define SIGJMP_BUF_ALIGN 8
+-#define MASK_WAS_SAVED_OFFSET 104
+-#define SAVED_MASK_OFFSET 108
++//#define JMP_BUF_SIZE 240
++#define JMP_BUF_SIZE 232
++//#define SIGJMP_BUF_SIZE 240
++#define SIGJMP_BUF_SIZE 232
++//#define JMP_BUF_ALIGN 8
++#define JMP_BUF_ALIGN 4
++//#define SIGJMP_BUF_ALIGN 8
++#define SIGJMP_BUF_ALIGN 4
++//#define MASK_WAS_SAVED_OFFSET 104
++#define MASK_WAS_SAVED_OFFSET 100
++//#define SAVED_MASK_OFFSET 108
++#define SAVED_MASK_OFFSET 104
+diff -Naur glibc-2.30/sysdeps/unix/sysv/linux/mips/setcontext.S glibc-2.30-sfsetjmp/sysdeps/unix/sysv/linux/mips/setcontext.S
+--- glibc-2.30/sysdeps/unix/sysv/linux/mips/setcontext.S	2019-08-01 07:29:31.000000000 +0300
++++ glibc-2.30-sfsetjmp/sysdeps/unix/sysv/linux/mips/setcontext.S	2022-02-04 14:42:05.022680000 +0300
+@@ -103,12 +103,24 @@
+ 	l.d	fs7, (31 * SZREG + MCONTEXT_FPREGS)(v0)
+ 
+ # else  /* _MIPS_SIM != _ABI64 */
+-	l.d	fs0, (20 * SZREG + MCONTEXT_FPREGS)(v0)
++/*	l.d	fs0, (20 * SZREG + MCONTEXT_FPREGS)(v0)
+ 	l.d	fs1, (22 * SZREG + MCONTEXT_FPREGS)(v0)
+ 	l.d	fs2, (24 * SZREG + MCONTEXT_FPREGS)(v0)
+ 	l.d	fs3, (26 * SZREG + MCONTEXT_FPREGS)(v0)
+ 	l.d	fs4, (28 * SZREG + MCONTEXT_FPREGS)(v0)
+-	l.d	fs5, (30 * SZREG + MCONTEXT_FPREGS)(v0)
++	l.d	fs5, (30 * SZREG + MCONTEXT_FPREGS)(v0)*/
++	lwc1	fs0, (20 * SZREG + MCONTEXT_FPREGS)(v0)
++	lwc1	fs0f, (21 * SZREG + MCONTEXT_FPREGS)(v0)
++	lwc1	fs1, (22 * SZREG + MCONTEXT_FPREGS)(v0)
++	lwc1	fs1f, (23 * SZREG + MCONTEXT_FPREGS)(v0)
++	lwc1	fs2, (24 * SZREG + MCONTEXT_FPREGS)(v0)
++	lwc1	fs2f, (25 * SZREG + MCONTEXT_FPREGS)(v0)
++	lwc1	fs3, (26 * SZREG + MCONTEXT_FPREGS)(v0)
++	lwc1	fs3f, (27 * SZREG + MCONTEXT_FPREGS)(v0)
++	lwc1	fs4, (28 * SZREG + MCONTEXT_FPREGS)(v0)
++	lwc1	fs4f, (29 * SZREG + MCONTEXT_FPREGS)(v0)
++	lwc1	fs5, (30 * SZREG + MCONTEXT_FPREGS)(v0)
++	lwc1	fs5f, (31 * SZREG + MCONTEXT_FPREGS)(v0)
+ 
+ # endif /* _MIPS_SIM != _ABI64 */
+ 
+diff -Naur glibc-2.30/sysdeps/unix/sysv/linux/mips/swapcontext.S glibc-2.30-sfsetjmp/sysdeps/unix/sysv/linux/mips/swapcontext.S
+--- glibc-2.30/sysdeps/unix/sysv/linux/mips/swapcontext.S	2019-08-01 07:29:31.000000000 +0300
++++ glibc-2.30-sfsetjmp/sysdeps/unix/sysv/linux/mips/swapcontext.S	2022-02-04 16:56:08.330775000 +0300
+@@ -115,12 +115,24 @@
+ 	s.d	fs7, (31 * SZREG + MCONTEXT_FPREGS)(a0)
+ 
+ # else  /* _MIPS_SIM != _ABI64 */
+-	s.d	fs0, (20 * SZREG + MCONTEXT_FPREGS)(a0)
++/*	s.d	fs0, (20 * SZREG + MCONTEXT_FPREGS)(a0)
+ 	s.d	fs1, (22 * SZREG + MCONTEXT_FPREGS)(a0)
+ 	s.d	fs2, (24 * SZREG + MCONTEXT_FPREGS)(a0)
+ 	s.d	fs3, (26 * SZREG + MCONTEXT_FPREGS)(a0)
+ 	s.d	fs4, (28 * SZREG + MCONTEXT_FPREGS)(a0)
+-	s.d	fs5, (30 * SZREG + MCONTEXT_FPREGS)(a0)
++	s.d	fs5, (30 * SZREG + MCONTEXT_FPREGS)(a0)*/
++	swc1	fs0, (20 * SZREG + MCONTEXT_FPREGS)(a0)
++	swc1	fs0f, (21 * SZREG + MCONTEXT_FPREGS)(a0)
++	swc1	fs1, (22 * SZREG + MCONTEXT_FPREGS)(a0)
++	swc1	fs1f, (23 * SZREG + MCONTEXT_FPREGS)(a0)
++	swc1	fs2, (24 * SZREG + MCONTEXT_FPREGS)(a0)
++	swc1	fs2f, (25 * SZREG + MCONTEXT_FPREGS)(a0)
++	swc1	fs3, (26 * SZREG + MCONTEXT_FPREGS)(a0)
++	swc1	fs3f, (27 * SZREG + MCONTEXT_FPREGS)(a0)
++	swc1	fs4, (28 * SZREG + MCONTEXT_FPREGS)(a0)
++	swc1	fs4f, (29 * SZREG + MCONTEXT_FPREGS)(a0)
++	swc1	fs5, (30 * SZREG + MCONTEXT_FPREGS)(a0)
++	swc1	fs5f, (31 * SZREG + MCONTEXT_FPREGS)(a0)
+ 
+ # endif /* _MIPS_SIM != _ABI64 */
+ 
+@@ -154,12 +166,24 @@
+ 	l.d	fs7, (31 * SZREG + MCONTEXT_FPREGS)(v0)
+ 
+ # else  /* _MIPS_SIM != _ABI64 */
+-	l.d	fs0, (20 * SZREG + MCONTEXT_FPREGS)(v0)
++/*	l.d	fs0, (20 * SZREG + MCONTEXT_FPREGS)(v0)
+ 	l.d	fs1, (22 * SZREG + MCONTEXT_FPREGS)(v0)
+ 	l.d	fs2, (24 * SZREG + MCONTEXT_FPREGS)(v0)
+ 	l.d	fs3, (26 * SZREG + MCONTEXT_FPREGS)(v0)
+ 	l.d	fs4, (28 * SZREG + MCONTEXT_FPREGS)(v0)
+-	l.d	fs5, (30 * SZREG + MCONTEXT_FPREGS)(v0)
++	l.d	fs5, (30 * SZREG + MCONTEXT_FPREGS)(v0)*/
++	lwc1	fs0, (20 * SZREG + MCONTEXT_FPREGS)(v0)
++	lwc1	fs0f, (21 * SZREG + MCONTEXT_FPREGS)(v0)
++	lwc1	fs1, (22 * SZREG + MCONTEXT_FPREGS)(v0)
++	lwc1	fs1f, (23 * SZREG + MCONTEXT_FPREGS)(v0)
++	lwc1	fs2, (24 * SZREG + MCONTEXT_FPREGS)(v0)
++	lwc1	fs2f, (25 * SZREG + MCONTEXT_FPREGS)(v0)
++	lwc1	fs3, (26 * SZREG + MCONTEXT_FPREGS)(v0)
++	lwc1	fs3f, (27 * SZREG + MCONTEXT_FPREGS)(v0)
++	lwc1	fs4, (28 * SZREG + MCONTEXT_FPREGS)(v0)
++	lwc1	fs4f, (29 * SZREG + MCONTEXT_FPREGS)(v0)
++	lwc1	fs5, (30 * SZREG + MCONTEXT_FPREGS)(v0)
++	lwc1	fs5f, (31 * SZREG + MCONTEXT_FPREGS)(v0)
+ 
+ # endif /* _MIPS_SIM != _ABI64 */
+ 
