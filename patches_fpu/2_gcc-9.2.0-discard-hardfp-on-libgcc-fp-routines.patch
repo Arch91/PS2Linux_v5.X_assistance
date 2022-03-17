@@ -1,0 +1,19 @@
+diff -Naur gcc-9.2.0_orig/libgcc/config.host gcc-9.2.0_edited/libgcc/config.host
+--- gcc-9.2.0_orig/libgcc/config.host	2019-01-17 15:29:13.000000000 +0300
++++ gcc-9.2.0_edited/libgcc/config.host	2022-03-16 20:24:26.451884000 +0300
+@@ -150,11 +150,11 @@
+ 	# All MIPS targets provide a full set of FP routines.
+ 	cpu_type=mips
+ 	tmake_file="mips/t-mips"
+-	if test "${libgcc_cv_mips_hard_float}" = yes; then
+-		tmake_file="${tmake_file} t-hardfp-sfdf t-hardfp"
+-	else
++#	if test "${libgcc_cv_mips_hard_float}" = yes; then
++#		tmake_file="${tmake_file} t-hardfp-sfdf t-hardfp"
++#	else
+ 		tmake_file="${tmake_file} t-softfp-sfdf"
+-	fi
++#	fi
+ 	if test "${ac_cv_sizeof_long_double}" = 16; then
+ 		tmake_file="${tmake_file} mips/t-softfp-tf"
+ 	fi

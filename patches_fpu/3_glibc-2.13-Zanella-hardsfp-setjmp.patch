@@ -1,0 +1,173 @@
+diff -Naur glibc-2.13/glibc-ports-2.13/sysdeps/mips/__longjmp.c glibc-2.13-sfsetjmp/glibc-ports-2.13/sysdeps/mips/__longjmp.c
+--- glibc-2.13/glibc-ports-2.13/sysdeps/mips/__longjmp.c	2022-02-04 11:16:06.637263000 +0300
++++ glibc-2.13-sfsetjmp/glibc-ports-2.13/sysdeps/mips/__longjmp.c	2022-03-09 17:33:13.213982000 +0300
+@@ -42,12 +42,19 @@
+ 
+ #ifdef __mips_hard_float
+   /* Pull back the floating point callee-saved registers.  */
+-  asm volatile ("l.d $f20, %0" : : "m" (env[0].__fpregs[0]));
+-  asm volatile ("l.d $f22, %0" : : "m" (env[0].__fpregs[1]));
+-  asm volatile ("l.d $f24, %0" : : "m" (env[0].__fpregs[2]));
+-  asm volatile ("l.d $f26, %0" : : "m" (env[0].__fpregs[3]));
+-  asm volatile ("l.d $f28, %0" : : "m" (env[0].__fpregs[4]));
+-  asm volatile ("l.d $f30, %0" : : "m" (env[0].__fpregs[5]));
++# if __mips_fpr == 0 || __mips_fpr == 64
++#  define LDFPR "ldc1 "
++# elif __mips_fpr == 32
++#  define LDFPR "lwc1 "
++# else
++#  define LDFPR "l.d "
++# endif
++  asm volatile (LDFPR "$f20, %0" : : "m" (env[0].__fpregs[0]));
++  asm volatile (LDFPR "$f22, %0" : : "m" (env[0].__fpregs[1]));
++  asm volatile (LDFPR "$f24, %0" : : "m" (env[0].__fpregs[2]));
++  asm volatile (LDFPR "$f26, %0" : : "m" (env[0].__fpregs[3]));
++  asm volatile (LDFPR "$f28, %0" : : "m" (env[0].__fpregs[4]));
++  asm volatile (LDFPR "$f30, %0" : : "m" (env[0].__fpregs[5]));
+ 
+   /* Get and reconstruct the floating point csr.  */
+   asm volatile ("lw $2, %0" : : "m" (env[0].__fpc_csr));
+diff -Naur glibc-2.13/glibc-ports-2.13/sysdeps/mips/setjmp_aux.c glibc-2.13-sfsetjmp/glibc-ports-2.13/sysdeps/mips/setjmp_aux.c
+--- glibc-2.13/glibc-ports-2.13/sysdeps/mips/setjmp_aux.c	2011-01-26 00:00:16.000000000 +0300
++++ glibc-2.13-sfsetjmp/glibc-ports-2.13/sysdeps/mips/setjmp_aux.c	2022-03-09 17:34:07.073574000 +0300
+@@ -29,12 +29,20 @@
+ {
+ #ifdef __mips_hard_float
+   /* Store the floating point callee-saved registers...  */
+-  asm volatile ("s.d $f20, %0" : : "m" (env[0].__jmpbuf[0].__fpregs[0]));
+-  asm volatile ("s.d $f22, %0" : : "m" (env[0].__jmpbuf[0].__fpregs[1]));
+-  asm volatile ("s.d $f24, %0" : : "m" (env[0].__jmpbuf[0].__fpregs[2]));
+-  asm volatile ("s.d $f26, %0" : : "m" (env[0].__jmpbuf[0].__fpregs[3]));
+-  asm volatile ("s.d $f28, %0" : : "m" (env[0].__jmpbuf[0].__fpregs[4]));
+-  asm volatile ("s.d $f30, %0" : : "m" (env[0].__jmpbuf[0].__fpregs[5]));
++# if __mips_fpr == 0 || __mips_fpr == 64
++#  define STFPR "sdc1 "
++# elif __mips_fpr == 32
++#  define STFPR "swc1 "
++# else
++#  define STFPR "s.d "
++# endif
++   /* Store the floating point callee-saved registers...  */
++  asm volatile (STFPR "$f20, %0" : : "m" (env[0].__jmpbuf[0].__fpregs[0]));
++  asm volatile (STFPR "$f22, %0" : : "m" (env[0].__jmpbuf[0].__fpregs[1]));
++  asm volatile (STFPR "$f24, %0" : : "m" (env[0].__jmpbuf[0].__fpregs[2]));
++  asm volatile (STFPR "$f26, %0" : : "m" (env[0].__jmpbuf[0].__fpregs[3]));
++  asm volatile (STFPR "$f28, %0" : : "m" (env[0].__jmpbuf[0].__fpregs[4]));
++  asm volatile (STFPR "$f30, %0" : : "m" (env[0].__jmpbuf[0].__fpregs[5]));
+ #endif
+ 
+   /* .. and the PC;  */
+diff -Naur glibc-2.13/glibc-ports-2.13/sysdeps/unix/sysv/linux/mips/getcontext.S glibc-2.13-sfsetjmp/glibc-ports-2.13/sysdeps/unix/sysv/linux/mips/getcontext.S
+--- glibc-2.13/glibc-ports-2.13/sysdeps/unix/sysv/linux/mips/getcontext.S	2011-01-26 00:00:16.000000000 +0300
++++ glibc-2.13-sfsetjmp/glibc-ports-2.13/sysdeps/unix/sysv/linux/mips/getcontext.S	2022-03-09 17:37:20.483153000 +0300
+@@ -103,12 +103,19 @@
+ 	s.d	fs7, (31 * SZREG + MCONTEXT_FPREGS)(a0)
+ 
+ # else  /* _MIPS_SIM != _ABI64 */
+-	s.d	fs0, (20 * SZREG + MCONTEXT_FPREGS)(a0)
+-	s.d	fs1, (22 * SZREG + MCONTEXT_FPREGS)(a0)
+-	s.d	fs2, (24 * SZREG + MCONTEXT_FPREGS)(a0)
+-	s.d	fs3, (26 * SZREG + MCONTEXT_FPREGS)(a0)
+-	s.d	fs4, (28 * SZREG + MCONTEXT_FPREGS)(a0)
+-	s.d	fs5, (30 * SZREG + MCONTEXT_FPREGS)(a0)
++#  if __mips_fpr == 0 || __mips_fpr == 64
++#   define STFPR sdc1
++#  elif __mips_fpr == 32
++#   define STFPR swc1
++#  else
++#   define STFPR s.d
++#  endif
++	STFPR	fs0, (20 * SZREG + MCONTEXT_FPREGS)(a0)
++	STFPR	fs1, (22 * SZREG + MCONTEXT_FPREGS)(a0)
++	STFPR	fs2, (24 * SZREG + MCONTEXT_FPREGS)(a0)
++	STFPR	fs3, (26 * SZREG + MCONTEXT_FPREGS)(a0)
++	STFPR	fs4, (28 * SZREG + MCONTEXT_FPREGS)(a0)
++	STFPR	fs5, (30 * SZREG + MCONTEXT_FPREGS)(a0)
+ 
+ # endif /* _MIPS_SIM != _ABI64 */
+ 
+diff -Naur glibc-2.13/glibc-ports-2.13/sysdeps/unix/sysv/linux/mips/setcontext.S glibc-2.13-sfsetjmp/glibc-ports-2.13/sysdeps/unix/sysv/linux/mips/setcontext.S
+--- glibc-2.13/glibc-ports-2.13/sysdeps/unix/sysv/linux/mips/setcontext.S	2011-01-26 00:00:16.000000000 +0300
++++ glibc-2.13-sfsetjmp/glibc-ports-2.13/sysdeps/unix/sysv/linux/mips/setcontext.S	2022-03-09 17:35:53.923781000 +0300
+@@ -101,12 +101,19 @@
+ 	l.d	fs7, (31 * SZREG + MCONTEXT_FPREGS)(v0)
+ 
+ # else  /* _MIPS_SIM != _ABI64 */
+-	l.d	fs0, (20 * SZREG + MCONTEXT_FPREGS)(v0)
+-	l.d	fs1, (22 * SZREG + MCONTEXT_FPREGS)(v0)
+-	l.d	fs2, (24 * SZREG + MCONTEXT_FPREGS)(v0)
+-	l.d	fs3, (26 * SZREG + MCONTEXT_FPREGS)(v0)
+-	l.d	fs4, (28 * SZREG + MCONTEXT_FPREGS)(v0)
+-	l.d	fs5, (30 * SZREG + MCONTEXT_FPREGS)(v0)
++#  if __mips_fpr == 0 || __mips_fpr == 64
++#   define LDFPR ldc1
++#  elif __mips_fpr == 32
++#   define LDFPR lwc1
++#  else
++#   define LDFPR l.d
++#  endif
++	LDFPR	fs0, (20 * SZREG + MCONTEXT_FPREGS)(v0)
++	LDFPR	fs1, (22 * SZREG + MCONTEXT_FPREGS)(v0)
++	LDFPR	fs2, (24 * SZREG + MCONTEXT_FPREGS)(v0)
++	LDFPR	fs3, (26 * SZREG + MCONTEXT_FPREGS)(v0)
++	LDFPR	fs4, (28 * SZREG + MCONTEXT_FPREGS)(v0)
++	LDFPR	fs5, (30 * SZREG + MCONTEXT_FPREGS)(v0)
+ 
+ # endif /* _MIPS_SIM != _ABI64 */
+ 
+diff -Naur glibc-2.13/glibc-ports-2.13/sysdeps/unix/sysv/linux/mips/swapcontext.S glibc-2.13-sfsetjmp/glibc-ports-2.13/sysdeps/unix/sysv/linux/mips/swapcontext.S
+--- glibc-2.13/glibc-ports-2.13/sysdeps/unix/sysv/linux/mips/swapcontext.S	2011-01-26 00:00:16.000000000 +0300
++++ glibc-2.13-sfsetjmp/glibc-ports-2.13/sysdeps/unix/sysv/linux/mips/swapcontext.S	2022-03-09 17:37:21.670145000 +0300
+@@ -112,12 +112,19 @@
+ 	s.d	fs7, (31 * SZREG + MCONTEXT_FPREGS)(a0)
+ 
+ # else  /* _MIPS_SIM != _ABI64 */
+-	s.d	fs0, (20 * SZREG + MCONTEXT_FPREGS)(a0)
+-	s.d	fs1, (22 * SZREG + MCONTEXT_FPREGS)(a0)
+-	s.d	fs2, (24 * SZREG + MCONTEXT_FPREGS)(a0)
+-	s.d	fs3, (26 * SZREG + MCONTEXT_FPREGS)(a0)
+-	s.d	fs4, (28 * SZREG + MCONTEXT_FPREGS)(a0)
+-	s.d	fs5, (30 * SZREG + MCONTEXT_FPREGS)(a0)
++#  if __mips_fpr == 0 || __mips_fpr == 64
++#   define STFPR sdc1
++#  elif __mips_fpr == 32
++#   define STFPR swc1
++#  else
++#   define STFPR s.d
++#  endif
++	STFPR	fs0, (20 * SZREG + MCONTEXT_FPREGS)(a0)
++	STFPR	fs1, (22 * SZREG + MCONTEXT_FPREGS)(a0)
++	STFPR	fs2, (24 * SZREG + MCONTEXT_FPREGS)(a0)
++	STFPR	fs3, (26 * SZREG + MCONTEXT_FPREGS)(a0)
++	STFPR	fs4, (28 * SZREG + MCONTEXT_FPREGS)(a0)
++	STFPR	fs5, (30 * SZREG + MCONTEXT_FPREGS)(a0)
+ 
+ # endif /* _MIPS_SIM != _ABI64 */
+ 
+@@ -151,12 +158,20 @@
+ 	l.d	fs7, (31 * SZREG + MCONTEXT_FPREGS)(v0)
+ 
+ # else  /* _MIPS_SIM != _ABI64 */
+-	l.d	fs0, (20 * SZREG + MCONTEXT_FPREGS)(v0)
+-	l.d	fs1, (22 * SZREG + MCONTEXT_FPREGS)(v0)
+-	l.d	fs2, (24 * SZREG + MCONTEXT_FPREGS)(v0)
+-	l.d	fs3, (26 * SZREG + MCONTEXT_FPREGS)(v0)
+-	l.d	fs4, (28 * SZREG + MCONTEXT_FPREGS)(v0)
+-	l.d	fs5, (30 * SZREG + MCONTEXT_FPREGS)(v0)
++#  if __mips_fpr == 0 || __mips_fpr == 64
++#   define LDFPR ldc1
++#  elif __mips_fpr == 32
++#   define LDFPR lwc1
++#  else
++#   define LDFPR l.d
++#  endif
++
++	LDFPR	fs0, (20 * SZREG + MCONTEXT_FPREGS)(v0)
++	LDFPR	fs1, (22 * SZREG + MCONTEXT_FPREGS)(v0)
++	LDFPR	fs2, (24 * SZREG + MCONTEXT_FPREGS)(v0)
++	LDFPR	fs3, (26 * SZREG + MCONTEXT_FPREGS)(v0)
++	LDFPR	fs4, (28 * SZREG + MCONTEXT_FPREGS)(v0)
++	LDFPR	fs5, (30 * SZREG + MCONTEXT_FPREGS)(v0)
+ 
+ # endif /* _MIPS_SIM != _ABI64 */
+ 
