@@ -1,0 +1,31 @@
+#!/bin/bash
+# Simple brutal sh-scripts chain.
+if [ "$(echo $PATH | grep -o /usr/local/ps2/bin)" != "/usr/local/ps2/bin" ]
+then
+ echo -en "\033[36;1m There is no "/usr/local/ps2/bin" was added to \$PATH . Adding... \033[0m\n"
+ export PATH=/usr/local/ps2/bin:$PATH
+ export GAWK_NO_RE_INTERVALS=1
+fi
+ echo -en "\033[36;1m ...so?.. README! \033[0m\n"
+
+# The steps below are similar to the built -gnu toolchain. For the -musl toolchain, 
+# the only difference is that you must change the command of making to
+#make CROSS_COMPILE=mipsr5900el-unknown-linux-musl- -j 4
+# No need to redownload the source obviously, 'make clean' is enough.
+
+#cd ../building
+#if [ ! -e iopmod ]
+#then
+#git clone https://github.com/frno7/iopmod.git || exit -1
+#fi
+#cd iopmod
+
+#make CROSS_COMPILE=mipsr5900el-unknown-linux-musl- -j 4 || exit -1
+# modules.irx supposed to be in the 'module' folder from now. Further, let's
+# copy them to the appropriate kernel source initrd folder.
+#cp -rdfv module/*.irx ../initramfs/lib/firmware/ps2/
+
+#sleep 2
+
+#cd ../../scripts_static
+#sh 7_vmlinux.sh

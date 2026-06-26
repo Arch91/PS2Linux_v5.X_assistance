@@ -1,0 +1,70 @@
+diff -Naur a/arch/mips/include/uapi/asm/sysmips.h b/arch/mips/include/uapi/asm/sysmips.h
+--- a/arch/mips/include/uapi/asm/sysmips.h	2026-04-28 19:50:58.922927419 +0300
++++ b/arch/mips/include/uapi/asm/sysmips.h	2026-04-28 19:52:34.122944708 +0300
+@@ -22,5 +22,6 @@
+ #define MIPS_FIXADE		   7	/* control address error fixing	 */
+ #define MIPS_RDNVRAM		  10	/* read NVRAM */
+ #define MIPS_ATOMIC_SET		2001	/* atomically set variable	 */
++#define MIPS_ATOMIC_CAS		2002	/* atomically CAS variable	 */
+ 
+ #endif /* _ASM_SYSMIPS_H */
+diff -Naur a/arch/mips/kernel/syscall.c b/arch/mips/kernel/syscall.c
+--- a/arch/mips/kernel/syscall.c	2026-04-28 19:50:17.015335777 +0300
++++ b/arch/mips/kernel/syscall.c	2026-04-28 19:57:10.227652721 +0300
+@@ -197,18 +197,55 @@
+ 	unreachable();
+ }
+ 
++/* 
++ * On uniprocessor (UP) systems, we achieve atomicity by disabling 
++ * preemption. Unlike the original mips_atomic_set, we hold the 
++ * lock throughout the entire read-compare-write sequence. 
++ * This prevents the scheduler from clearing the software ll_bit 
++ * (and thus causing a Livelock) without the overhead of 
++ * disabling hardware interrupts.
++ *
++ * Note: If you are running on an SMP MIPS system, go away! 
++ * This linear implementation relies strictly on UP atomicity 
++ * and does not use memory barriers required for multi-core.
++ */
++static int mips_atomic_cas(unsigned long addr, unsigned long old, unsigned long new)
++{
++	unsigned long prev;
++	unsigned int __user *uaddr = (unsigned int __user *)addr;
++
++	if (unlikely(addr & 3))
++		return -EINVAL;
++
++	if (unlikely(!access_ok(uaddr, 4)))
++		return -EFAULT;
++
++	preempt_disable();
++
++	if (__get_user(prev, uaddr) == 0 && prev == old) {
++		__put_user(new, uaddr);
++	}
++
++	preempt_enable();
++
++	return (int)prev;
++}
++
+ /*
+  * mips_atomic_set() normally returns directly via syscall_exit potentially
+  * clobbering static registers, so be sure to preserve them.
+  */
+ save_static_function(sys_sysmips);
+ 
+-SYSCALL_DEFINE3(sysmips, long, cmd, long, arg1, long, arg2)
++SYSCALL_DEFINE4(sysmips, long, cmd, long, arg1, long, arg2, long, arg3)
+ {
+ 	switch (cmd) {
+ 	case MIPS_ATOMIC_SET:
+ 		return mips_atomic_set(arg1, arg2);
+ 
++	case MIPS_ATOMIC_CAS:
++		return mips_atomic_cas(arg1, arg2, arg3);
++
+ 	case MIPS_FIXADE:
+ 		if (arg1 & ~3)
+ 			return -EINVAL;

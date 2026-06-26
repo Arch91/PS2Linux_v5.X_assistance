@@ -4,12 +4,13 @@ if [ "$(echo $PATH | grep -o /usr/local/ps2/bin)" != "/usr/local/ps2/bin" ]
 then
  echo -en "\033[36;1m There is no "/usr/local/ps2/bin" was added to \$PATH . Adding... \033[0m\n"
  export PATH=/usr/local/ps2/bin:$PATH
+ export GAWK_NO_RE_INTERVALS=1
 fi
 
 cd ../sources
 if [ ! -e sysklogd-2.1.1.tar.gz ]
 then
-wget https://ftp.troglobit.com/sysklogd/sysklogd-2.1.1.tar.gz || exit -1
+wget https://github.com/troglobit/sysklogd/releases/download/v2.1.1/sysklogd-2.1.1.tar.gz || exit -1
 fi
 cd ../building
 tar -zxvf ../sources/sysklogd-2.1.1.tar.gz

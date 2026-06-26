@@ -1,0 +1,40 @@
+diff -Naur a/arch/mips/include/asm/bitops.h b/arch/mips/include/asm/bitops.h
+--- a/arch/mips/include/asm/bitops.h	2026-06-07 18:34:14.422253589 +0300
++++ b/arch/mips/include/asm/bitops.h	2026-06-07 18:03:12.923624498 +0300
+@@ -510,6 +510,19 @@
+ 		: "r" (word));
+ 
+ 		return 31 - num;
++	} else if (BITS_PER_LONG == 32 && !__builtin_constant_p(word) &&
++	    cpu_has_toshiba_mmi) {
++		int tmp;
++
++		__asm__(
++		"	srl	%1, %2, 31				\n"
++		"	plzcw	%0, %2					\n"
++		"	addiu	%0, %0, 1				\n"
++		"	movn	%0, $0, %1				\n"
++		: "=r" (num), "=&r" (tmp)
++		: "r" (word));
++
++		return 31 - num;
+ 	}
+ 
+ 	if (BITS_PER_LONG == 64 && !__builtin_constant_p(word) &&
+@@ -588,6 +601,16 @@
+ 		: "r" (x));
+ 
+ 		return 32 - x;
++	} else if (!__builtin_constant_p(x) && cpu_has_toshiba_mmi) {
++		int tmp;
++		__asm__(
++		"	srl	%1, %2, 31				\n"
++		"	plzcw	%0, %2					\n"
++		"	addiu	%0, %0, 1				\n"
++		"	movn	%0, $0, %1				\n"
++		: "=r" (x), "=&r" (tmp)
++		: "r" (x));
++		return 32 - x;
+ 	}
+ 
+ 	r = 32;

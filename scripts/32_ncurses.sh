@@ -4,6 +4,7 @@ if [ "$(echo $PATH | grep -o /usr/local/ps2/bin)" != "/usr/local/ps2/bin" ]
 then
  echo -en "\033[36;1m There is no "/usr/local/ps2/bin" was added to \$PATH . Adding... \033[0m\n"
  export PATH=/usr/local/ps2/bin:$PATH
+ export GAWK_NO_RE_INTERVALS=1
 fi
 
 # Let's rebuild ncurses to have .pc files since we have pkg-config

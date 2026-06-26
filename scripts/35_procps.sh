@@ -4,12 +4,13 @@ if [ "$(echo $PATH | grep -o /usr/local/ps2/bin)" != "/usr/local/ps2/bin" ]
 then
  echo -en "\033[36;1m There is no "/usr/local/ps2/bin" was added to \$PATH . Adding... \033[0m\n"
  export PATH=/usr/local/ps2/bin:$PATH
+ export GAWK_NO_RE_INTERVALS=1
 fi
 
 cd ../sources
 if [ ! -e procps-3.2.8.tar.gz ]
 then
-wget http://procps.sourceforge.net/procps-3.2.8.tar.gz || exit -1
+wget https://repository.timesys.com/buildsources/p/procps/procps-3.2.8/procps-3.2.8.tar.gz || exit -1
 fi
 cd ../building
 tar -zxvf ../sources/procps-3.2.8.tar.gz

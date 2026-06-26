@@ -4,6 +4,7 @@ if [ "$(echo $PATH | grep -o /usr/local/ps2/bin)" != "/usr/local/ps2/bin" ]
 then
  echo -en "\033[36;1m There is no "/usr/local/ps2/bin" was added to \$PATH . Adding... \033[0m\n"
  export PATH=/usr/local/ps2/bin:$PATH
+ export GAWK_NO_RE_INTERVALS=1
 fi
 
 cd ../sources
@@ -16,6 +17,7 @@ tar -jxvf ../sources/make-3.81.tar.bz2
 cd make-3.81
 
 patch -p1 < ../../patches/23_make-3.81-alloca_unmiss.patch || exit -1
+patch -p1 < ../../patches/23_make-3.81_globFixed.patch || exit -1
 
 ./configure --prefix=/usr/local/ps2/mipsr5900el-unknown-linux-gnu --host=mipsr5900el-unknown-linux-gnu || exit -1
 

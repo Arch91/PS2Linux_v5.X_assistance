@@ -1,0 +1,41 @@
+diff -Naur gcc-9.2.0/gcc/glimits.h gcc-9.2.0_glibc-2.34_compat/gcc/glimits.h
+--- gcc-9.2.0/gcc/glimits.h	2019-01-01 15:31:55.000000000 +0300
++++ gcc-9.2.0_glibc-2.34_compat/gcc/glimits.h	2026-04-04 18:01:07.492333333 +0300
+@@ -30,7 +30,7 @@
+ 
+ /* Maximum length of a multibyte character.  */
+ #ifndef MB_LEN_MAX
+-#define MB_LEN_MAX 1
++#define MB_LEN_MAX 16
+ #endif
+ 
+ /* Minimum and maximum values a `signed char' can hold.  */
+@@ -149,4 +149,17 @@
+ # define ULLONG_WIDTH __LONG_LONG_WIDTH__
+ #endif
+ 
++#ifdef	__USE_POSIX
++/* POSIX adds things to <limits.h>.  */
++# include <bits/posix1_lim.h>
++#endif
++
++#ifdef	__USE_POSIX2
++# include <bits/posix2_lim.h>
++#endif
++
++#ifdef	__USE_XOPEN
++# include <bits/xopen_lim.h>
++#endif
++
+ #endif /* _LIMITS_H___ */
+diff -Naur gcc-9.2.0/libsanitizer/asan/asan_linux.cc gcc-9.2.0_glibc-2.34_compat/libsanitizer/asan/asan_linux.cc
+--- gcc-9.2.0/libsanitizer/asan/asan_linux.cc	2018-10-31 14:14:23.000000000 +0300
++++ gcc-9.2.0_glibc-2.34_compat/libsanitizer/asan/asan_linux.cc	2026-03-29 06:33:58.640743292 +0300
+@@ -31,6 +31,7 @@
+ #include <dlfcn.h>
+ #include <fcntl.h>
+ #include <limits.h>
++#include <linux/limits.h>
+ #include <pthread.h>
+ #include <stdio.h>
+ #include <unistd.h>

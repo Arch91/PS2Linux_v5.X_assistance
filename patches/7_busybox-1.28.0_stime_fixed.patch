@@ -1,0 +1,21 @@
+diff -Naur busybox-1.28.0/include/libbb.h busybox-1.28.0_stime_fixed/include/libbb.h
+--- busybox-1.28.0/include/libbb.h	2017-10-05 12:53:08.000000000 +0300
++++ busybox-1.28.0_stime_fixed/include/libbb.h	2026-04-08 16:14:59.198149054 +0300
+@@ -350,6 +350,17 @@
+ uint64_t bb_bswap_64(uint64_t x) FAST_FUNC;
+ #endif
+ 
++#include <sys/syscall.h>
++#if !defined(__NR_clock_gettime) && defined(__NR_clock_gettime32)
++# define __NR_clock_gettime __NR_clock_gettime32
++#endif
++#include <unistd.h>
++
++static inline int stime(const time_t *t) {
++    struct timespec ts = { .tv_sec = *t, .tv_nsec = 0 };
++    return clock_settime(CLOCK_REALTIME, &ts);
++}
++
+ unsigned long FAST_FUNC isqrt(unsigned long long N);
+ 
+ unsigned long long monotonic_ns(void) FAST_FUNC;

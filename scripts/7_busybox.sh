@@ -4,6 +4,7 @@ if [ "$(echo $PATH | grep -o /usr/local/ps2/bin)" != "/usr/local/ps2/bin" ]
 then
  echo -en "\033[36;1m There is no "/usr/local/ps2/bin" was added to \$PATH . Adding... \033[0m\n"
  export PATH=/usr/local/ps2/bin:$PATH
+ export GAWK_NO_RE_INTERVALS=1
 fi
 
 cd ../sources
@@ -14,6 +15,7 @@ fi
 cd ../building
 tar -jxvf ../sources/busybox-1.28.0.tar.bz2
 cd busybox-1.28.0
+patch -p1 < ../../patches/7_busybox-1.28.0_stime_fixed.patch
 cp ../../config-files/config-busybox.txt .config || exit -1
 make oldconfig || exit -1
 make -j 4 || exit -1
@@ -22,15 +24,18 @@ make -j 4 || exit -1
 make install || exit -1
 
 cd _install
-mkdir {dev,lib,proc,sys,mnt,newroot}
+mkdir {dev,lib,proc,sys,mnt,var,tmp,newroot}
 mkdir lib/firmware
 mkdir lib/firmware/ps2
 cp ../../../config-files/"init-for-busybox.sh" init || exit -1
+rm -f sbin/init
 cp ../../../config-files/"actual_init-for-busybox.sh" sbin/init || exit -1
+chmod a+x init
+chmod a+x sbin/init
 
 sleep 2
 
 cd ../../
-ln -s busybox-1.28.0/_install initramfs-ps2
+mv busybox-1.28.0/_install initramfs
 cd ../scripts
 sh 8_iopmod.sh

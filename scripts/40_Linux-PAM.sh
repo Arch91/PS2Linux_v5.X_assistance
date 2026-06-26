@@ -4,6 +4,7 @@ if [ "$(echo $PATH | grep -o /usr/local/ps2/bin)" != "/usr/local/ps2/bin" ]
 then
  echo -en "\033[36;1m There is no "/usr/local/ps2/bin" was added to \$PATH . Adding... \033[0m\n"
  export PATH=/usr/local/ps2/bin:$PATH
+ export GAWK_NO_RE_INTERVALS=1
 fi
 
 if [ -e /usr/bin/automake-1.13 ] && [ "$(automake-1.13 --version | grep -o 1.13.4)" == "1.13.4" ]
@@ -39,7 +40,7 @@ fi
 cd ../sources
 if [ ! -e Linux-PAM-1.3.0.tar.bz2 ]
 then
-wget http://linux-pam.org/library/Linux-PAM-1.3.0.tar.bz2 || exit -1
+wget https://ftp2.osuosl.org/pub/blfs/conglomeration/Linux-PAM/Linux-PAM-1.3.0.tar.bz2 || exit -1
 fi
 cd ../building
 tar -jxvf ../sources/Linux-PAM-1.3.0.tar.bz2

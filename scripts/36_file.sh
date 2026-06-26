@@ -6,6 +6,12 @@ then
  export PATH=/usr/local/ps2/bin:$PATH
 fi
 
+# The file package is designed in such a way that it can only be cross-compiled if the host
+# system has the exact same version of file installed. Therefore, unfortunately, you have no
+# choice but to compile and install it to your host system first to proceed with the
+# cross-compilation. Please search the internet for a hint on how to reinstall the original
+# latest system package of file from your official repository.
+
 cd ../sources
 if [ ! -e file-5.30.tar.gz ]
 then

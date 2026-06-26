@@ -4,6 +4,7 @@ if [ "$(echo $PATH | grep -o /usr/local/ps2/bin)" != "/usr/local/ps2/bin" ]
 then
  echo -en "\033[36;1m There is no "/usr/local/ps2/bin" was added to \$PATH . Adding... \033[0m\n"
  export PATH=/usr/local/ps2/bin:$PATH
+ export GAWK_NO_RE_INTERVALS=1
 fi
 
 cd ../sources
@@ -23,4 +24,4 @@ make install || exit -1
 sleep 2
 
 cd ../../scripts
-sh 51_openssl.sh
+sh 51_fbset.sh

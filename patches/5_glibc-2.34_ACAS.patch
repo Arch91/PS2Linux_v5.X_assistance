@@ -1,0 +1,178 @@
+diff -Naur glibc-2.34/crypt/Makefile glibc-2.34_ACAS/crypt/Makefile
+--- glibc-2.34/crypt/Makefile	2021-08-02 04:33:43.000000000 +0300
++++ glibc-2.34_ACAS/crypt/Makefile	2026-03-30 06:46:44.281079140 +0300
+@@ -40,7 +40,7 @@
+ CPPFLAGS-md5-crypt.c += $(nss-cpp-flags)
+ LDLIBS-crypt.so = -lfreebl3
+ else
+-libcrypt-routines += md5 sha256 sha512
++libcrypt-routines += md5 sha256 sha512 r5900_atomic_fix
+ 
+ tests += md5test sha256test sha512test
+ 
+diff -Naur glibc-2.34/malloc/Makefile glibc-2.34_ACAS/malloc/Makefile
+--- glibc-2.34/malloc/Makefile	2021-08-02 04:33:43.000000000 +0300
++++ glibc-2.34_ACAS/malloc/Makefile	2026-03-29 22:29:10.381967069 +0300
+@@ -129,10 +129,10 @@
+   tst-interpose-aux-nothread \
+   tst-interpose-aux-thread \
+ 
+-libmemusage-routines = memusage
++libmemusage-routines = memusage r5900_atomic_fix
+ libmemusage-inhibit-o = $(filter-out .os,$(object-suffixes))
+ 
+-libc_malloc_debug-routines = malloc-debug $(sysdep_malloc_debug_routines)
++libc_malloc_debug-routines = malloc-debug r5900_atomic_fix $(sysdep_malloc_debug_routines)
+ libc_malloc_debug-inhibit-o = $(filter-out .os,$(object-suffixes))
+ 
+ $(objpfx)tst-malloc-backtrace: $(shared-thread-library)
+diff -Naur glibc-2.34/nis/Makefile glibc-2.34_ACAS/nis/Makefile
+--- glibc-2.34/nis/Makefile	2021-08-02 04:33:43.000000000 +0300
++++ glibc-2.34_ACAS/nis/Makefile	2026-03-30 06:56:25.910297557 +0300
+@@ -41,6 +41,8 @@
+ 		  nis_findserv nis_callback nis_clone_dir nis_clone_obj\
+ 		  nis_clone_res
+ 
++libnsl-routines += r5900_atomic_fix
++
+ # Pretend that libnsl.so is a linker script, so that the symbolic link
+ # is not installed.
+ install-lib-ldscripts = libnsl.so
+diff -Naur glibc-2.34/nscd/Makefile glibc-2.34_ACAS/nscd/Makefile
+--- glibc-2.34/nscd/Makefile	2021-08-02 04:33:43.000000000 +0300
++++ glibc-2.34_ACAS/nscd/Makefile	2026-03-30 06:59:14.424204409 +0300
+@@ -36,7 +36,7 @@
+ 		getsrvbynm_r getsrvbypt_r servicescache \
+ 		dbg_log nscd_conf nscd_stat cache mem nscd_setup_thread \
+ 		xmalloc xstrdup aicache initgrcache gai res_hconf \
+-		netgroupcache cachedumper
++		netgroupcache cachedumper r5900_atomic_fix
+ 
+ ifeq ($(build-nscd)$(have-thread-library),yesyes)
+ 
+diff -Naur glibc-2.34/nss/Makefile glibc-2.34_ACAS/nss/Makefile
+--- glibc-2.34/nss/Makefile	2021-08-02 04:33:43.000000000 +0300
++++ glibc-2.34_ACAS/nss/Makefile	2026-03-30 06:55:34.501633826 +0300
+@@ -122,7 +122,9 @@
+ 					$(addsuffix .c,$(libnss_db-dbs)))
+ 
+ libnss_compat-routines	:= $(addprefix compat-,grp pwd spwd initgroups) \
+-			   nisdomain
++			   nisdomain r5900_atomic_fix
++
++libnss_db-routines += r5900_atomic_fix
+ 
+ install-others		+= $(inst_vardbdir)/Makefile
+ 
+diff -Naur glibc-2.34/support/Makefile glibc-2.34_ACAS/support/Makefile
+--- glibc-2.34/support/Makefile	2021-08-02 04:33:43.000000000 +0300
++++ glibc-2.34_ACAS/support/Makefile	2026-03-30 06:27:40.740356353 +0300
+@@ -35,6 +35,7 @@
+   ignore_stderr \
+   next_to_fault \
+   oom_error \
++  r5900_atomic_fix \
+   resolv_response_context_duplicate \
+   resolv_response_context_free \
+   resolv_test \
+diff -Naur glibc-2.34/sysdeps/mips/atomic-machine.h glibc-2.34_ACAS/sysdeps/mips/atomic-machine.h
+--- glibc-2.34/sysdeps/mips/atomic-machine.h	2021-08-02 04:33:43.000000000 +0300
++++ glibc-2.34_ACAS/sysdeps/mips/atomic-machine.h	2026-03-29 21:54:14.446642321 +0300
+@@ -59,7 +59,7 @@
+ #define MIPS_SYNC_STR_1(X) MIPS_SYNC_STR_2(X)
+ #define MIPS_SYNC_STR MIPS_SYNC_STR_1(MIPS_SYNC)
+ 
+-#define USE_ATOMIC_COMPILER_BUILTINS 1
++#define USE_ATOMIC_COMPILER_BUILTINS 0
+ 
+ /* MIPS is an LL/SC machine.  However, XLP has a direct atomic exchange
+    instruction which will be used by __atomic_exchange_n.  */
+diff -Naur glibc-2.34/sysdeps/mips/Makefile glibc-2.34_ACAS/sysdeps/mips/Makefile
+--- glibc-2.34/sysdeps/mips/Makefile	2021-08-02 04:33:43.000000000 +0300
++++ glibc-2.34_ACAS/sysdeps/mips/Makefile	2026-05-21 21:25:20.226855416 +0300
+@@ -75,6 +75,12 @@
+ endif
+ endif
+ 
++sysdep_routines += r5900_atomic_fix
++
++ifeq ($(subdir),support)
++libsupport-routines += r5900_atomic_fix
++endif
++
+ ifeq ($(subdir),elf)
+ tests += tst-undefined-weak
+ modules-names += tst-undefined-weak-lib
+diff -Naur glibc-2.34/sysdeps/mips/r5900_atomic_fix.c glibc-2.34_ACAS/sysdeps/mips/r5900_atomic_fix.c
+--- glibc-2.34/sysdeps/mips/r5900_atomic_fix.c	1970-01-01 03:00:00.000000000 +0300
++++ glibc-2.34_ACAS/sysdeps/mips/r5900_atomic_fix.c	2026-05-21 21:26:08.671555585 +0300
+@@ -0,0 +1,69 @@
++#include <stdbool.h>
++
++__attribute__((noinline))
++static int __kuser_cmpxchg(volatile void *ptr, int oldval, int newval) 
++{
++    register unsigned long v0 asm("$v0") = 4149;
++    register unsigned long a0 asm("$a0") = 2002;
++    register unsigned long a1 asm("$a1") = (unsigned long)ptr;
++    register unsigned long a2 asm("$a2") = (unsigned long)oldval;
++    register unsigned long a3 asm("$a3") = (unsigned long)newval;
++
++    __asm__ __volatile__(
++        "syscall\n"
++        : "+r"(v0), "+r"(a3)
++        : "r"(a0), "r"(a1), "r"(a2)
++        : "$v1", "$t0", "$t1", "$t2", "$t3", "$t4", "$t5", "$t6", "$t7", "$t8", "$t9", "memory"
++    );
++
++    return (int)v0;
++}
++
++__attribute__((weak))
++bool __atomic_compare_exchange_4(volatile void *mem, void *expected, int desired, bool weak, int success, int failure) {
++    int exp_val = *(int *)expected;
++    int old_in_mem = __kuser_cmpxchg(mem, exp_val, desired);
++    
++    if (old_in_mem == exp_val) {
++        return true;
++    } else {
++        *(int *)expected = old_in_mem;
++        return false;
++    }
++}
++
++__attribute__((weak))
++int __atomic_fetch_add_4(volatile void *mem, int val, int model) {
++    int old, prev;
++    old = *(volatile int *)mem;
++    while (1) {
++        prev = __kuser_cmpxchg(mem, old, old + val);
++        if (prev == old) 
++            return old;
++        old = prev;
++    }
++}
++
++__attribute__((weak))
++int __atomic_exchange_4(volatile void *mem, int val, int model) {
++    int old, prev;
++    old = *(volatile int *)mem;
++    while (1) {
++        prev = __kuser_cmpxchg(mem, old, val);
++        if (prev == old) 
++            return old;
++        old = prev;
++    }
++}
++
++__attribute__((weak))
++int __atomic_fetch_sub_4(volatile void *mem, int val, int model) {
++    int old, prev;
++    old = *(volatile int *)mem;
++    while (1) {
++        prev = __kuser_cmpxchg(mem, old, old - val);
++        if (prev == old) 
++            return old;
++        old = prev;
++    }
++}

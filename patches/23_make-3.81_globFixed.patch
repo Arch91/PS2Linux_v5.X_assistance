@@ -1,0 +1,15 @@
+diff -Naur make-3.81/glob/glob.c make-3.81_globFixed/glob/glob.c
+--- make-3.81/glob/glob.c	2006-03-10 05:20:45.000000000 +0300
++++ make-3.81_globFixed/glob/glob.c	2026-04-12 14:21:58.325848723 +0300
+@@ -206,6 +206,11 @@
+ # endif /* __SASC */
+ #endif /* __GNU_LIBRARY__ */
+ 
++#define __alloca alloca
++#define __stat stat
++#define __lstat lstat
++#define __stat64 stat
++#define __lstat64 lstat
+ 
+ #if !defined __alloca && !defined __GNU_LIBRARY__
+ 
